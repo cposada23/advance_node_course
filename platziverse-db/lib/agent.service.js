@@ -23,7 +23,7 @@ module.exports = function setupAgent (AgentModel) {
     return result.toJSON()
   }
 
-  function findByUuid(uuid) {
+  function findByUuid (uuid) {
     return AgentModel.findOne({
       where: {
         uuid
@@ -46,7 +46,7 @@ module.exports = function setupAgent (AgentModel) {
   function findByUsername (username) {
     return AgentModel.findAll({
       where: {
-        username, 
+        username,
         connected: true
       }
     })

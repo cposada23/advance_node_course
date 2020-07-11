@@ -1,9 +1,10 @@
 'use strict'
 
 const setupDatabase = require('./lib/db')
-const setupAgentModel = require('./models/agent')
-const setupMetricModel = require('./models/metric')
-const setupAgent = require('./lib/agent')
+const setupAgentModel = require('./models/agent.model')
+const setupMetricModel = require('./models/metric.model')
+const setupMetric = require('./lib/metric.service')
+const setupAgent = require('./lib/agent.service')
 const defaults = require('defaults')
 
 module.exports = async function (config) {
@@ -36,7 +37,7 @@ module.exports = async function (config) {
   }
 
   const Agent = setupAgent(AgentModel)
-  const Metric = {}
+  const Metric = setupMetric(MetricModel, AgentModel)
 
   return {
     Agent,
