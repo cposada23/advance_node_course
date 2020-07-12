@@ -17,8 +17,7 @@ const singleMetric = Object.assign({}, metricFixtures.singleMetric)
 
 let db = null
 let sandbox = null
-let uuid = singleAgent.uuid
-
+const uuid = singleAgent.uuid
 
 const uuidArgs = {
   where: {
@@ -26,14 +25,11 @@ const uuidArgs = {
   }
 }
 
-
 // Stubs
 let AgentStub = null
 let MetricStub = null
 
-
-
-let metricUuidArgs = {
+const metricUuidArgs = {
   attributes: ['type'],
   group: ['type'],
   include: [{
@@ -44,7 +40,7 @@ let metricUuidArgs = {
     }
   }],
   raw: true
-}; 
+}
 
 test.beforeEach(async () => {
   sandbox = sinon.createSandbox()
@@ -56,11 +52,11 @@ test.beforeEach(async () => {
     hasMany: sandbox.spy()
   }
 
-   // Model findOne Stub
+  // Model findOne Stub
   AgentStub.findOne = sandbox.stub()
   AgentStub.findOne.withArgs(uuidArgs).returns(Promise.resolve(agentFixtures.byUuid(uuid)))
- 
-  metricUuidArgs.include[0].model = AgentStub;
+
+  metricUuidArgs.include[0].model = AgentStub
   // Model metric create - stub
   MetricStub.create = sandbox.stub()
   MetricStub.create.withArgs(singleMetric).returns(Promise.resolve({
@@ -71,7 +67,7 @@ test.beforeEach(async () => {
   MetricStub.findAll = sandbox.stub()
   console.log(metricUuidArgs)
   MetricStub.findAll.withArgs(metricUuidArgs).returns(Promise.resolve(metricFixtures.all))
-  
+
   const setupDatabase = proxyquire('../', {
     './models/agent.model': () => AgentStub,
     './models/metric.model': () => MetricStub
@@ -88,6 +84,13 @@ test('Metric:Agent#Services', t => {
   t.truthy(db.Metric, 'Metric service should exist')
 })
 
+test.serial('Setup Metric', t => {
+  t.true(AgentStub.hasMany.called, 'AgentModel.hasMany was executed')
+  t.true(AgentStub.hasMany.calledWith(MetricStub), 'Argument should be the MetricModel')
+  t.true(MetricStub.belongsTo.called, 'MetricModel.belongsTo was executed')
+  t.true(MetricStub.belongsTo.calledWith(AgentStub), 'Argument should be the AgentModel')
+})
+
 test.serial('Metric#Create', async t => {
   const metric = await db.Metric.create(singleAgent.uuid, singleMetric)
 
@@ -99,8 +102,6 @@ test.serial('Metric#Create', async t => {
 
   t.deepEqual(metric, singleMetric, 'metric should be the same')
 })
-
-
 
 test.serial('Metric#findByAgentUuid', async t => {
   const metrics = await db.Metric.findByAgentUuid(singleAgent.uuid)

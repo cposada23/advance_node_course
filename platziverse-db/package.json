@@ -2,11 +2,13 @@
   "name": "platziverse-db",
   "version": "1.0.0",
   "description": "Modulo de base de datos",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "setup": "DEBUG=platziverse:* node setup.js",
     "lint": "standard",
-    "test": "DEBUG=patziverse:* nyc --reporter=lcov ava tests/*-tests.js --verbose"
+    "test": "DEBUG=patziverse:* nyc --reporter=lcov ava tests/*-tests.js --verbose",
+    "examples": "DEBUG=platziverse:* node examples/index.js"
   },
   "author": "Camilo",
   "license": "MIT",
