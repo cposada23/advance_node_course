@@ -96,7 +96,7 @@ aedes.on('publish', async (packet, client) => {
         debug(`Agent ${agent.uuid} saved`)
 
         if (!clients.get(client.id)) {
-          client.set(client.id, agent)
+          clients.set(client.id, agent)
           aedes.publish({
             topic: topicAgentConnected,
             payload: JSON.stringify({
@@ -110,18 +110,7 @@ aedes.on('publish', async (packet, client) => {
             })
           })
         }
-
-        // Almacenar las metricas
-        for (let metric of payload.metrics ) {
-          let m
-
-          try {
-            m = await Metric.create(agent.uuid, metric)
-          }catch(error) {
-            return handleError(error)
-          }
-          debug(`Metric ${m.id} saved on agent ${agent.uuid}`)
-        }
+        storemetrics(agent, payload)
       }
       break
   }
@@ -139,6 +128,16 @@ function handleFatalError (error) {
 function handleError (error) {
   debug(`${chalk.red('[ERROR]')} ${error.message}`)
   debug(chalk.red(`ERROR: ${error.stack}`))
+}
+
+async function storemetrics({ uuid }, { metrics }) {
+  Promise.all(
+    metrics.map(async metric => {
+      await Metric.create(uuid, metric)
+        .then(metric => debug(`Metric ${metric.id} saved on agent ${uuid}`))
+        .catch(err => handleError(err))
+    })
+  );
 }
 
 process.on('uncaughtException', handleFatalError)
