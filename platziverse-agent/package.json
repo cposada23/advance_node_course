@@ -5,6 +5,7 @@
   "description": "A simple IoT platform - Agent",
   "main": "index.js",
   "scripts": {
+    "example": "DEBUG=platziverse:* node examples/index.js",
     "lint": "standard",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

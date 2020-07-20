@@ -1,0 +1,27 @@
+{
+  "name": "platziverse-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "lint": "standard",
+    "start-dev": "DEBUG=platziverse:* nodemon server.js",
+    "start": "NODE_ENV=production node server.js",
+    "test": "DEBUG=patziverse:* ava tests/*-test.js --verbose"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^3.10.1",
+    "nodemon": "^2.0.4",
+    "standard": "^14.3.4",
+    "supertest": "^4.0.2",
+    "platziverse-db": "file:../platziverse-db"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "debug": "^4.1.1",
+    "express": "^4.17.1"
+  }
+}

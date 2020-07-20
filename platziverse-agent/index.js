@@ -2,8 +2,10 @@
 
 const debug = require('debug')('platziverse:agent')
 const mqtt = require('mqtt')
+const util = require('util')
 const defaults = require('defaults')
-const uuid = require(uuid)
+const uuid = require('uuid')
+const os = require('os')
 const EventEmitter = require('events')
 
 const { parsePayload } = require('./utils')
@@ -32,11 +34,23 @@ class PlatziverseAgent extends EventEmitter {
     this._timer = null
     this._client = null
     this._agentId = null
+    this._metrics = new Map()
   }
 
+  addMetric(type, fn) {
+    this._metrics.set(type, fn)
+  }
+
+  removeMetric(type) {
+    this._metrics.delete(type)
+  }
+
+  
   connect () {
     if (!this._started) {
+      debug('started')
       const opts = this._options
+      debug(`${JSON.stringify(opts)}`)
       this._client = mqtt.connect(opts.mqtt.host)
       this._started = true
 
@@ -48,8 +62,39 @@ class PlatziverseAgent extends EventEmitter {
         this._agentId = uuid.v4()
         this.emit('connected', this._agentId)
 
-        this._timer = setInterval(() => {
-          this.emit(topicAgentMessage, 'this is a message')
+        this._timer = setInterval( async () => {
+          debug(`this.metrics ${this._metrics.size}  ${this._metrics}`)
+          if(this._metrics.size > 0) {
+            let message = {
+              agent: {
+                uuid: this._agentId,
+                username: opts.username,
+                name: opts.name,
+                hostName: os.hostname() || 'localhost', 
+                pid: process.pid
+              },
+              metrics: [],
+              timestamp: new Date().getTime()
+            }
+            for(let [ metric, fn ] of this._metrics) {
+              if(fn.length === 1) {
+                fn = util.promisify(fn)
+              }
+  
+              message.metrics.push({
+                type: metric, 
+                value: await Promise.resolve(fn())
+              })
+            }
+  
+            debug('Sending', message)
+  
+            this._client.publish(topicAgentMessage, JSON.stringify(message))
+            this.emit('message', message)
+          }
+
+          
+
         }, opts.interval)
       })
 
@@ -71,7 +116,7 @@ class PlatziverseAgent extends EventEmitter {
 
       })
 
-      this.client.on('error', () => this.disconnect())
+      this._client.on('error', () => this.disconnect())
     }
   }
 
@@ -79,7 +124,8 @@ class PlatziverseAgent extends EventEmitter {
     if (this._started) {
       clearInterval(this._timer)
       this._started = false
-      this.emit('disconnected')
+      this.emit('disconnected', this._agentId)
+      this._client.end()
     }
   }
 }
